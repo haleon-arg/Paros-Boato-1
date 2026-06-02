@@ -284,6 +284,8 @@
   ];
   const TIMES = ['Menos de 5 min', 'Entre 5 y 10 min', 'Más de 10 min'];
   const STORAGE_KEY = 'paros_boato1_v1';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1j39zIUHnEjjw6SBtb06IIHxhiipkEPvkho25qdBpnY1KWco39JGvuY9JSHoLu7c2RQ/exec';
+  const SHEET_NAME = 'Paros_Boato1';
 
   let selectedCat = null;
   let selectedTime = null;
@@ -320,7 +322,23 @@
     timeGrid.appendChild(btn);
   });
 
-  loadData();
+
+  async function saveToSheets(stop) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sheet: SHEET_NAME,
+          headers: ['Fecha', 'Hora', 'Categoría', 'Duración'],
+          rows: [[stop.date, stop.timestamp, stop.category, stop.time]]
+        })
+      });
+    } catch(e) { console.warn('Error Sheets:', e); }
+  }
+
+    loadData();
   renderLog();
   updateStats();
 
@@ -358,6 +376,7 @@
       date: getDate()
     });
     saveData();
+    saveToSheets(stops[stops.length - 1]);
     renderLog();
     updateStats();
     showToast('Paro registrado ✓');
